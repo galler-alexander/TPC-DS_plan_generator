@@ -22,6 +22,7 @@ make_tpc()
 
 copy_tpc()
 {
+	cd $PWD
 	cp $PWD/tools/dsqgen ../*_gen_data/
 	cp $PWD/tools/dsqgen ../*_multi_user/
 	cp $PWD/tools/tpcds.idx ../*_gen_data/
@@ -42,7 +43,7 @@ copy_queries()
 	cp -R query_templates $PWD/../*_multi_user/
 }
 
-make_tpc
+#make_tpc
 create_hosts_file
 copy_tpc
 copy_queries

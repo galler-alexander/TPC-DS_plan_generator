@@ -24,17 +24,17 @@ check_variables()
 	fi
 	local count=$(grep "REPO_URL=" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "REPO_URL=\"https://github.com/pivotalguru/TPC-DS\"" >> $MYVAR
+		echo "REPO_URL=\"https://github.com/galler-alexander/TPC-DS\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
-	fi
 	local count=$(grep "ADMIN_USER=" $MYVAR | wc -l)
+	fi
 	if [ "$count" -eq "0" ]; then
 		echo "ADMIN_USER=\"gpadmin\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	local count=$(grep "INSTALL_DIR=" $MYVAR | wc -l)
 	if [ "$count" -eq "0" ]; then
-		echo "INSTALL_DIR=\"/pivotalguru\"" >> $MYVAR
+		echo "INSTALL_DIR=\"/home/gpadmin/db_benchmarks\"" >> $MYVAR
 		new_variable=$(($new_variable + 1))
 	fi
 	local count=$(grep "EXPLAIN_ANALYZE=" $MYVAR | wc -l)
@@ -138,12 +138,12 @@ check_user()
 {
 	### Make sure root is executing the script. ###
 	echo "############################################################################"
-	echo "Make sure root is executing this script."
+	echo "Make sure $ADMIN_USER is executing this script."
 	echo "############################################################################"
 	echo ""
 	local WHOAMI=`whoami`
-	if [ "$WHOAMI" != "root" ]; then
-		echo "Script must be executed as root!"
+	if [ "$WHOAMI" != "$ADMIN_USER" ]; then
+		echo "Script must be executed as $ADMIN_USER!"
 		exit 1
 	fi
 }
@@ -152,42 +152,42 @@ yum_installs()
 {
 	### Install and Update Demos ###
 	echo "############################################################################"
-	echo "Install git, gcc, and bc with yum."
+	echo "Make sure bc is installed."
 	echo "############################################################################"
 	echo ""
 	# Install git and gcc if not found
-	local YUM_INSTALLED=$(yum --help 2> /dev/null | wc -l)
-	local CURL_INSTALLED=$(gcc --help 2> /dev/null | wc -l)
-	local GIT_INSTALLED=$(git --help 2> /dev/null | wc -l)
+	#local YUM_INSTALLED=$(yum --help 2> /dev/null | wc -l)
+	#local CURL_INSTALLED=$(gcc --help 2> /dev/null | wc -l)
+	#local GIT_INSTALLED=$(git --help 2> /dev/null | wc -l)
 	local BC_INSTALLED=$(bc --help 2> /dev/null | wc -l)
 
-	if [ "$YUM_INSTALLED" -gt "0" ]; then
-		if [ "$CURL_INSTALLED" -eq "0" ]; then
-			yum -y install gcc
-		fi
-		if [ "$GIT_INSTALLED" -eq "0" ]; then
-			yum -y install git
-		fi
-		if [ "$BC_INSTALLED" -eq "0" ]; then
-			yum -y install bc
-		fi
-	else
-		if [ "$CURL_INSTALLED" -eq "0" ]; then
-			echo "gcc not installed and yum not found to install it."
-			echo "Please install gcc and try again."
-			exit 1
-		fi
-		if [ "$GIT_INSTALLED" -eq "0" ]; then
-			echo "git not installed and yum not found to install it."
-			echo "Please install git and try again."
-			exit 1
-		fi
+	#if [ "$YUM_INSTALLED" -gt "0" ]; then
+	#	if [ "$CURL_INSTALLED" -eq "0" ]; then
+	#		yum -y install gcc
+	#	fi
+	#	if [ "$GIT_INSTALLED" -eq "0" ]; then
+	#		yum -y install git
+	#	fi
+	#	if [ "$BC_INSTALLED" -eq "0" ]; then
+	#		yum -y install bc
+	#	fi
+	#else
+		#if [ "$CURL_INSTALLED" -eq "0" ]; then
+		#	echo "gcc not installed and yum not found to install it."
+		#	echo "Please install gcc and try again."
+		#	exit 1
+		#fi
+		#if [ "$GIT_INSTALLED" -eq "0" ]; then
+		#	echo "git not installed and yum not found to install it."
+		#	echo "Please install git and try again."
+		#	exit 1
+		#fi
 		if [ "$BC_INSTALLED" -eq "0" ]; then
 			echo "bc not installed and yum not found to install it."
 			echo "Please install bc and try again."
 			exit 1
 		fi
-	fi
+	#fi
 	echo ""
 }
 
@@ -227,13 +227,13 @@ repo_init()
 			echo "-------------------------------------------------------------------------"
 			mkdir $INSTALL_DIR/$REPO
 			chown $ADMIN_USER $INSTALL_DIR/$REPO
-			su -c "cd $INSTALL_DIR; GIT_SSL_NO_VERIFY=true; git clone --depth=1 $REPO_URL" $ADMIN_USER
+			cd $INSTALL_DIR; GIT_SSL_NO_VERIFY=true; git clone --depth=1 $REPO_URL
 		fi
 	else
 		if [ "$internet_down" -eq "0" ]; then
 			git config --global user.email "$ADMIN_USER@$HOSTNAME"
 			git config --global user.name "$ADMIN_USER"
-			su -c "cd $INSTALL_DIR/$REPO; GIT_SSL_NO_VERIFY=true; git fetch --all; git reset --hard origin/master" $ADMIN_USER
+			#cd $INSTALL_DIR/$REPO; GIT_SSL_NO_VERIFY=true; git fetch --all; git reset --hard origin/master
 		fi
 	fi
 }
@@ -278,11 +278,11 @@ echo_variables()
 # Body
 ##################################################################################################################################################
 
-check_user
 check_variables
+check_user
 yum_installs
 repo_init
 script_check
 echo_variables
 
-su -l $ADMIN_USER -c "cd \"$INSTALL_DIR/$REPO\"; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCDS $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $RUN_SCORE $SINGLE_USER_ITERATIONS"
+cd $INSTALL_DIR/$REPO; ./rollout.sh $GEN_DATA_SCALE $EXPLAIN_ANALYZE $RANDOM_DISTRIBUTION $MULTI_USER_COUNT $RUN_COMPILE_TPCDS $RUN_GEN_DATA $RUN_INIT $RUN_DDL $RUN_LOAD $RUN_SQL $RUN_SINGLE_USER_REPORT $RUN_MULTI_USER $RUN_MULTI_USER_REPORT $RUN_SCORE $SINGLE_USER_ITERATIONS

@@ -38,7 +38,7 @@ create_directories()
 
 create_directories
 echo "############################################################################"
-echo "TPC-DS Script for Pivotal Greenplum Database."
+echo "TPC-DS Script for Greenplum Database."
 echo "############################################################################"
 echo ""
 echo "############################################################################"
