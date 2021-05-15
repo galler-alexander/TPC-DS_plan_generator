@@ -233,7 +233,7 @@ repo_init()
 		if [ "$internet_down" -eq "0" ]; then
 			git config --global user.email "$ADMIN_USER@$HOSTNAME"
 			git config --global user.name "$ADMIN_USER"
-			#cd $INSTALL_DIR/$REPO; GIT_SSL_NO_VERIFY=true; git fetch --all; git reset --hard origin/master
+			cd $INSTALL_DIR/$REPO; GIT_SSL_NO_VERIFY=true; git fetch --all; git reset --hard origin/master
 		fi
 	fi
 }
