@@ -39,7 +39,8 @@ if [ "$file_count" -ne "$MULTI_USER_COUNT" ]; then
 	rm -f $PWD/../log/end_testing_*.log
 	rm -f $PWD/../log/testing*.log
 	rm -f $PWD/../log/rollout_testing_*.log
-	rm -f $PWD/../log/*multi.explain_analyze.log
+	rm -f $PWD/../log/*multi.explain.*.log
+	rm -f $PWD/../log/*multi.explain_analyze.*.log
 
 	rm -f $PWD/query_*.sql
 
@@ -77,7 +78,8 @@ if [ "$file_count" -ne "$MULTI_USER_COUNT" ]; then
 	for x in $(seq 1 $MULTI_USER_COUNT); do
 		session_log=$PWD/../log/testing_session_$x.log
 		echo "$PWD/test.sh $GEN_DATA_SCALE $x $EXPLAIN_ANALYZE"
-		$PWD/test.sh $GEN_DATA_SCALE $x $EXPLAIN_ANALYZE > $session_log 2>&1 < $session_log &
+		#$PWD/test.sh $GEN_DATA_SCALE $x $EXPLAIN_ANALYZE > $session_log 2>&1 < $session_log &
+		$PWD/test.sh $GEN_DATA_SCALE $x $EXPLAIN_ANALYZE > $session_log 2>&1 < $session_log
 	done
 
 	sleep 60

@@ -80,18 +80,35 @@ for i in $(ls $sql_dir/*.sql); do
 	schema_name=$session_id
 	table_name=$(basename $i | awk -F '.' '{print $3}')
 
+	myfilename=$(basename $i)
 	if [ "$EXPLAIN_ANALYZE" == "false" ]; then
-		echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="" -f $i | wc -l"
-		tuples=$(psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="" -f $i | wc -l; exit ${PIPESTATUS[0]})
-		tuples=$(($tuples-1))
-	else
-		myfilename=$(basename $i)
-		mylogfile=$PWD/../log/"$session_id"".""$myfilename"".multi.explain_analyze.log"
-		echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE=\"EXPLAIN ANALYZE\" -f $i"
-		psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN ANALYZE" -f $i > $mylogfile
+		mylogfile=$PWD/../log/"$session_id"".""$myfilename"".multi.explain.text.log"
+		echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE=\"EXPLAIN (VERBOSE, COSTS, FORMAT TEXT)\" -f $i > $mylogfile"
+		psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN (VERBOSE, COSTS, FORMAT TEXT)" -f $i > $mylogfile
 		tuples="0"
 	fi
-		
+	mylogfile=$PWD/../log/"$session_id"".""$myfilename"".multi.explain_analyze.text.log"
+	echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE=\"EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, TIMING, FORMAT TEXT) \" -f $i > $mylogfile"
+	psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, TIMING, FORMAT TEXT)" -f $i > $mylogfile
+	# TODO
+	# tuples=$(psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="" -f $i | wc -l; exit ${PIPESTATUS[0]})
+	# tuples=$(($tuples-1))
+	tuples="0"
+
+	if [ "$EXPLAIN_ANALYZE" == "false" ]; then
+		mylogfile=$PWD/../log/"$session_id"".""$myfilename"".multi.explain.json.log"
+		echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE=\"EXPLAIN (VERBOSE, COSTS, FORMAT JSON)\" -f $i > $mylogfile"
+		psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN (VERBOSE, COSTS, FORMAT JSON)" -f $i > $mylogfile
+		tuples="0"
+	fi
+	mylogfile=$PWD/../log/"$session_id"".""$myfilename"".multi.explain_analyze.json.log"
+	echo "psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE=\"EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, TIMING, FORMAT JSON) \" -f $i > $mylogfile"
+	psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, TIMING, FORMAT JSON)" -f $i > $mylogfile
+	# TODO
+	# tuples=$(psql -v ON_ERROR_STOP=1 -A -q -t -P pager=off -v EXPLAIN_ANALYZE="" -f $i | wc -l; exit ${PIPESTATUS[0]})
+	# tuples=$(($tuples-1))
+	tuples="0"
+
 	#remove the extra line that \timing adds
 	log $tuples
 done
